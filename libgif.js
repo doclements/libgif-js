@@ -689,14 +689,17 @@ var SuperGif = function ( opts ) {
 			iterationCount++;
 		};
 
-		var step = (function () {
+		var step = (function (callback) {
+
 			var stepping = false;
 
-			var doStep = function () {
+			var doStep = function (callback) {
+				//console.log("inside doStep()");
+				//console.log(callback);
 				stepping = playing;
 				if (!stepping) return;
 
-				stepFrame();
+				stepFrame(callback);
 				var delay = frames[i].delay * 10;
 				if (!delay) delay = 100; // FIXME: Should this even default at all? What should it be?
 
@@ -707,12 +710,12 @@ var SuperGif = function ( opts ) {
 				}
 
 				if ((overrideLoopMode !== false || nextFrameNo !== 0 || iterationCount < 0))
-					setTimeout(doStep, delay);
-
+					setTimeout(function(){doStep(callback);}, delay);
+				callback(curFrame);
 			};
 
-			return function () {
-				if (!stepping) setTimeout(doStep, 0);
+			return function (callback) {
+				if (!stepping) setTimeout(function(){doStep(callback);}, 0);
 			};
 		}());
 
@@ -725,9 +728,10 @@ var SuperGif = function ( opts ) {
 
 		};
 
-		var play = function () {
+		var play = function (callback) {
 			playing = true;
-			step();
+			step(callback);
+			callback('blah');
 		};
 
 		var pause = function () {
